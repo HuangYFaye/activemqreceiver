@@ -4,26 +4,27 @@ package com.one;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
+import javax.xml.soap.Text;
 
 /**
  * Created by huangyifei on 2018/7/8.
  */
-public class JMSPresistentTopicConsumer01 {
+public class JMSQueueListenerConsumer {
     public static void main(String[] args) {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://35.185.164.128:61616");
 
             Connection connection = null;
         try {
+            //建立连接
             connection = connectionFactory.createConnection();
-            connection.setClientID("LINE-ONE");
             connection.start();
-
+            //创建Session
             Session session = connection.createSession(Boolean.TRUE,Session.AUTO_ACKNOWLEDGE);
-            Topic destination = session.createTopic("MyTopic");
-
-            MessageConsumer messageConsumer = session.createDurableSubscriber(destination,"LINE-ONE");
-
-
+            //创建目的地
+            Destination destination = session.createQueue("MyQueue");
+            //创建Consumer
+            MessageConsumer messageConsumer = session.createConsumer(destination);
+            //创建监听器
             MessageListener messageListener = new MessageListener() {
                 @Override
                 public void onMessage(Message message) {
@@ -37,6 +38,7 @@ public class JMSPresistentTopicConsumer01 {
             };
 
             while (true){
+                //Consumer绑定监听器
                 messageConsumer.setMessageListener(messageListener);
                 session.commit();
             }

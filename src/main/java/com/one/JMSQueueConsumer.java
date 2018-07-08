@@ -4,45 +4,31 @@ package com.one;
 import org.apache.activemq.ActiveMQConnectionFactory;
 
 import javax.jms.*;
-import javax.xml.soap.Text;
 
 /**
  * Created by huangyifei on 2018/7/8.
  */
-public class JMSQueueListenerConsumer {
+public class JMSQueueConsumer {
     public static void main(String[] args) {
         ConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://35.185.164.128:61616");
 
             Connection connection = null;
         try {
+            //建立连接
             connection = connectionFactory.createConnection();
             connection.start();
-
+            //创建Session
             Session session = connection.createSession(Boolean.TRUE,Session.AUTO_ACKNOWLEDGE);
+            //创建目的地
             Destination destination = session.createQueue("MyQueue");
-
+            //创建Consumer
             MessageConsumer messageConsumer = session.createConsumer(destination);
+            //获取信息
+            TextMessage textMessage = (TextMessage) messageConsumer.receive();
+            System.out.println(textMessage.getText());
 
-
-            MessageListener messageListener = new MessageListener() {
-                @Override
-                public void onMessage(Message message) {
-                    try {
-                        System.out.println(((TextMessage)message).getText());
-                        System.out.println("111");
-                    } catch (JMSException e) {
-                        e.printStackTrace();
-                    }
-                }
-            };
-
-            while (true){
-                messageConsumer.setMessageListener(messageListener);
-                session.commit();
-            }
-
-
-
+            session.commit();
+            session.close();
         } catch (JMSException e) {
             e.printStackTrace();
         }finally {
